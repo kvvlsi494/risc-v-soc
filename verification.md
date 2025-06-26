@@ -24,7 +24,7 @@ The DMA transfer would "complete," and the interrupt would fire at the correct t
 #### The Waveform
 The key was to analyze the precise timing relationship between the DMA's FSM state (`state`), its master bus signals (`m_addr`, `m_req`, `m_gnt`), the system's read data bus (`bus_rdata`), and the DMA's internal storage (`data_buffer`). The waveform below shows the **corrected, working design** and is used here to illustrate the bug and its solution.
 
-![DMA Read Latency Bug Waveform](DMA_Bug_Waveform.png)
+![DMA Read Latency Bug Waveform](dma_bug_waveform.png)
 *(A screenshot of the GTKWave session showing a successful DMA read-write cycle)*
 
 #### In-Depth Waveform Interpretation
