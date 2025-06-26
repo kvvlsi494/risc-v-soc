@@ -1,3 +1,10 @@
+// Copyright (c) 2025 Kumar Vedang
+// SPDX-License-Identifier: MIT
+//
+// This source file is part of the RISC-V SoC project.
+//
+
+
 // File: tb_risc_soc.sv (FINAL, COMPLETE, CORRECTED, AND ROBUST VERSION)
 `timescale 1ns / 1ps
 

@@ -1,4 +1,8 @@
-# File: run_regression.py - FINAL INTEGRATED VERSION
+# Copyright (c) 2025 Kumar Vedang
+# SPDX-License-Identifier: MIT
+#
+# This source file is part of the RISC-V SoC project.
+#
 
 import os
 import subprocess

@@ -1,8 +1,14 @@
+// Copyright (c) 2025 Kumar Vedang
+// SPDX-License-Identifier: MIT
+//
+// This source file is part of the RISC-V SoC project.
+//
+
 /*
 --------------------------------------------------------------------------------
 -- Module Name: simple_cpu
 -- Project: A Simple RISC-V SoC with DMA-Driven Peripherals
--- Author: [Your Name/Persona]
+-- Author: Kumar Vedang
 --------------------------------------------------------------------------------
 --
 -- High-Level Module Purpose:
