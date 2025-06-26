@@ -1,7 +1,6 @@
 # File: run_regression.py - FINAL INTEGRATED VERSION
 
 import os
-PROJECT_ROOT = ".."
 import subprocess
 
 # --- Configuration ---
@@ -14,22 +13,26 @@ TEST_CASES = [
     "FULL_REGRESSION" # Runs all tests sequentially
 ]
 
+# --- Configuration ---
+# List of Verilog/SystemVerilog files to be compiled.
+# The paths are relative to the project's root directory.
+# The order is critical to satisfy module dependencies.
 COMPILE_ORDER = [
     # RTL Files
-    f"{PROJECT_ROOT}/rtl/on_chip_ram.v",
-    f"{PROJECT_ROOT}/rtl/crc32_accelerator.v",
-    f"{PROJECT_ROOT}/rtl/timer.v",
-    f"{PROJECT_ROOT}/rtl/uart_tx.v",
-    f"{PROJECT_ROOT}/rtl/uart_rx.v",
-    f"{PROJECT_ROOT}/rtl/uart_top.v",
-    f"{PROJECT_ROOT}/rtl/address_decoder.v",
-    f"{PROJECT_ROOT}/rtl/arbiter.v",
-    f"{PROJECT_ROOT}/rtl/interrupt_controller.v",
-    f"{PROJECT_ROOT}/rtl/dma_engine.v",
-    f"{PROJECT_ROOT}/rtl/simple_cpu.v",
-    f"{PROJECT_ROOT}/rtl/risc_soc.sv",
+    "rtl/on_chip_ram.v",
+    "rtl/crc32_accelerator.v",
+    "rtl/timer.v",
+    "rtl/uart_tx.v",
+    "rtl/uart_rx.v",
+    "rtl/uart_top.v",
+    "rtl/address_decoder.v",
+    "rtl/arbiter.v",
+    "rtl/interrupt_controller.v",
+    "rtl/dma_engine.v",
+    "rtl/simple_cpu.v",
+    "rtl/risc_soc.sv",
     # Testbench File
-    f"{PROJECT_ROOT}/tb/tb_risc_soc.sv"
+    "tb/tb_risc_soc.sv"
 ]
 
 COMPILE_FILES_STR = " ".join(COMPILE_ORDER)

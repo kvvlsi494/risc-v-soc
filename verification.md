@@ -38,3 +38,15 @@ The key was to analyze the relationship between the DMA's FSM state, its master 
 4.  **The Fix in the Waveform:** The corrected waveform (as shown) includes the new **`S_READ_WAIT`** state. The FSM transitions from `S_READ_ADDR` to `S_READ_WAIT`. During this state (between Marker B and C), the `bus_rdata` is stable. At the end of the `S_READ_WAIT` state, the DMA latches this valid data into its `data_buffer`. Only then does it proceed to the write state, now holding the correct data.
 
 This debugging session highlights a fundamental principle of bus-master design: **a master must account for the latency of the slaves it communicates with.** The `S_READ_WAIT` state explicitly handles the one-cycle read latency of our on-chip RAM.
+
+
+
+## 4. Final Regression Results
+
+The ultimate measure of the project's success is the passing report from the automated regression suite. The `run_regression.py` script executes all defined system-level tests and checks their output logs for a "PASS" signature.
+
+The final output confirms that all tests, including the complex DMA and interrupt-driven scenarios, passed successfully.
+
+**![Final Regression Summary](regression_pass.png)**
+
+*Screenshot showing the output of the `run_regression.py` script.*
