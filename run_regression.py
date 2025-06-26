@@ -1,0 +1,81 @@
+# File: run_regression.py - FINAL INTEGRATED VERSION
+
+import os
+import subprocess
+
+# --- Configuration ---
+TEST_CASES = [
+    "DMA_TEST",
+    "CRC_TEST",
+    "TIMER_TEST",
+    "UART_LOOPBACK_TEST",
+    "CORNER_CASE_TEST",
+    "FULL_REGRESSION" # Runs all tests sequentially
+]
+
+# ** UPDATED ** compile order
+COMPILE_ORDER = [
+    "on_chip_ram.v", "crc32_accelerator.v", "timer.v",
+    "uart_tx.v", "uart_rx.v", "uart_top.v", # Add uart_top and its dependencies
+    "address_decoder.v", "arbiter.v", "interrupt_controller.v",
+    "dma_engine.v", "simple_cpu.v",
+    "risc_soc.sv",
+    "tb_risc_soc.sv"
+]
+
+COMPILE_FILES_STR = " ".join(COMPILE_ORDER)
+IV_COMPILE_CMD = f"iverilog -g2005-sv -o soc_sim {COMPILE_FILES_STR}"
+
+def main():
+    # (The rest of the script logic is unchanged)
+    print("=======================================")
+    print("=== Starting RISC-V SoC Regression ===")
+    print("=======================================")
+    print(f"\n--- Compiling the design using explicit order ---")
+    print(f"Compile Command: {IV_COMPILE_CMD}")
+    try:
+        subprocess.run(IV_COMPILE_CMD, shell=True, check=True, capture_output=True, text=True)
+        print("Compilation successful.")
+    except subprocess.CalledProcessError as e:
+        print("[ERROR] Compilation failed!")
+        print(e.stderr)
+        return
+
+    results = {}
+    for test in TEST_CASES:
+        print(f"\n--- Running Test: {test} ---")
+        run_cmd = f"vvp soc_sim +TESTNAME={test}"
+        try:
+            sim_output = subprocess.check_output(run_cmd, shell=True, text=True)
+            with open(f"log_{test}.txt", "w") as f: f.write(sim_output)
+            if "All Transactions PASSED" in sim_output or "Test Successful" in sim_output:
+                print(f"[STATUS] PASSED")
+                results[test] = "PASS"
+            elif "TEST FAILED" in sim_output or "ERROR" in sim_output:
+                print(f"[STATUS] FAILED")
+                results[test] = "FAIL"
+            else:
+                print(f"[STATUS] UNKNOWN - Could not determine pass/fail.")
+                results[test] = "UNKNOWN"
+        except subprocess.CalledProcessError as e:
+            print(f"[ERROR] Simulation crashed for test: {test}")
+            results[test] = "CRASH"
+    
+    print("\n=======================================")
+    print("=== Regression Summary ===")
+    print("=======================================")
+    all_passed = True
+    for test, result in results.items():
+        print(f"  {test:<20} : {result}")
+        if result != "PASS": all_passed = False
+    print("---------------------------------------")
+    if all_passed:
+        print(">>> ALL TESTS PASSED! Regression successful. <<<")
+    else:
+        print(">>> REGRESSION FAILED! Check logs for details. <<<")
+    print("=======================================")
+
+if __name__ == "__main__":
+    main()
+
+
