@@ -1,6 +1,7 @@
 # File: run_regression.py - FINAL INTEGRATED VERSION
 
 import os
+PROJECT_ROOT = ".."
 import subprocess
 
 # --- Configuration ---
@@ -13,14 +14,22 @@ TEST_CASES = [
     "FULL_REGRESSION" # Runs all tests sequentially
 ]
 
-# ** UPDATED ** compile order
 COMPILE_ORDER = [
-    "on_chip_ram.v", "crc32_accelerator.v", "timer.v",
-    "uart_tx.v", "uart_rx.v", "uart_top.v", # Add uart_top and its dependencies
-    "address_decoder.v", "arbiter.v", "interrupt_controller.v",
-    "dma_engine.v", "simple_cpu.v",
-    "risc_soc.sv",
-    "tb_risc_soc.sv"
+    # RTL Files
+    f"{PROJECT_ROOT}/rtl/on_chip_ram.v",
+    f"{PROJECT_ROOT}/rtl/crc32_accelerator.v",
+    f"{PROJECT_ROOT}/rtl/timer.v",
+    f"{PROJECT_ROOT}/rtl/uart_tx.v",
+    f"{PROJECT_ROOT}/rtl/uart_rx.v",
+    f"{PROJECT_ROOT}/rtl/uart_top.v",
+    f"{PROJECT_ROOT}/rtl/address_decoder.v",
+    f"{PROJECT_ROOT}/rtl/arbiter.v",
+    f"{PROJECT_ROOT}/rtl/interrupt_controller.v",
+    f"{PROJECT_ROOT}/rtl/dma_engine.v",
+    f"{PROJECT_ROOT}/rtl/simple_cpu.v",
+    f"{PROJECT_ROOT}/rtl/risc_soc.sv",
+    # Testbench File
+    f"{PROJECT_ROOT}/tb/tb_risc_soc.sv"
 ]
 
 COMPILE_FILES_STR = " ".join(COMPILE_ORDER)
