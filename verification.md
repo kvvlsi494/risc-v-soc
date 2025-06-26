@@ -19,26 +19,29 @@ The system-level testbench (`tb/tb_risc_soc.sv`) is architected using principles
 One of the most critical bugs found during development was a data corruption issue in the DMA engine. The scoreboard reported that the data being written was stale or all zeros. This is a classic example of how waveform analysis is used to find the root cause.
 
 #### The Symptom
-The DMA transfer would "complete," but the data in the destination memory was incorrect.
+The DMA transfer would "complete," and the interrupt would fire at the correct time, but the data copied to the destination memory was incorrect. This indicated a problem with the **data path**, not the main control flow.
 
 #### The Waveform
-The key was to analyze the relationship between the DMA's FSM state, its master bus signals, and the system's read data bus.
+The key was to analyze the precise timing relationship between the DMA's FSM state (`state`), its master bus signals (`m_addr`, `m_req`, `m_gnt`), the system's read data bus (`bus_rdata`), and the DMA's internal storage (`data_buffer`). The waveform below shows the **corrected, working design** and is used here to illustrate the bug and its solution.
 
-
-*(Note: This is a representative image. In a real project, you would insert a screenshot of your actual GTKWave session here.)*
+![DMA Read Latency Bug Waveform](dma_bug_waveform.png)
+*(A screenshot of the GTKWave session showing a successful DMA read-write cycle)*
 
 #### In-Depth Waveform Interpretation
 
-1.  **(Marker A) `S_READ_ADDR` State:** The waveform shows the DMA FSM (`u_dma.state`) entering the `S_READ_ADDR` state. In this cycle, the DMA correctly drives the source address (`0x1000`) onto its master address bus (`u_dma.m_addr`). It asserts `m_req`, and the arbiter grants the bus.
+This analysis walks through a single, successful read-write cycle, explaining how the design correctly handles memory latency. The FSM states are `S_READ_ADDR=2`, `S_READ_WAIT=3`, `S_WRITE_ADDR=4`, `S_CHECK_DONE=5`.
 
-2.  **(Marker B) RAM Response:** One clock cycle later, the `on_chip_ram` responds to the read request. The correct data (`0xCAFE0001`) appears on the main system read data bus (`bus_rdata`). **This is the critical observation: the data is only valid for this one cycle.**
+1.  **The Request (Marker at ~570ns):** The FSM transitions into **`S_READ_ADDR` (state `2`)**. We can see the DMA asserts its bus request (`m_req` goes high) and drives the first source address, **`0x00008000`**, onto its master address bus (`m_addr`). The DMA is now asking the system for the data at this location.
 
-3.  **(Marker C) The Flaw:** In the original, buggy design, the FSM would transition directly from `S_READ_ADDR` to `S_WRITE_ADDR`. By the time it tried to sample the data in the `S_WRITE_ADDR` state, `bus_rdata` was no longer being driven by the RAM, and the DMA's internal `data_buffer` would latch an invalid (stale or 'X') value.
+2.  **The Response (Marker at ~590ns):** One clock cycle later, the `on_chip_ram` responds. We see the `bus_rdata` signal become valid, presenting the data **`0xDE344CBC`**. This is a critical observation: the data is only guaranteed to be valid on the bus for this single clock cycle while the FSM is in the `S_READ_WAIT` state.
 
-4.  **The Fix in the Waveform:** The corrected waveform (as shown) includes the new **`S_READ_WAIT`** state. The FSM transitions from `S_READ_ADDR` to `S_READ_WAIT`. During this state (between Marker B and C), the `bus_rdata` is stable. At the end of the `S_READ_WAIT` state, the DMA latches this valid data into its `data_buffer`. Only then does it proceed to the write state, now holding the correct data.
+3.  **The Latch - The Critical Fix (Marker at ~600ns):** This is the moment the bug was fixed.
+    *   **The Flaw (in the original buggy design):** The FSM would have transitioned directly from `S_READ_ADDR` to `S_WRITE_ADDR`, completely skipping the `S_READ_WAIT` state. By the time it tried to sample `bus_rdata`, the data `0xDE344CBC` would have been gone, and it would latch a stale or invalid value.
+    *   **The Fix in the Waveform:** The corrected waveform shows the FSM entering the new **`S_READ_WAIT` (state `3`)** state for one full cycle. At the *end* of this state (at the rising edge at ~600ns), the DMA executes `data_buffer <= m_rdata;`. As we can see in the waveform, the `data_buffer` signal is successfully updated with the value **`0xDE344CBC`** at the beginning of the next cycle. The data has been safely captured.
 
-This debugging session highlights a fundamental principle of bus-master design: **a master must account for the latency of the slaves it communicates with.** The `S_READ_WAIT` state explicitly handles the one-cycle read latency of our on-chip RAM.
+4.  **The Write (Marker at ~610ns):** The FSM now transitions to **`S_WRITE_ADDR` (state `4`)**. Holding the correctly latched data in its `data_buffer`, it now drives the destination address, **`0x0000C000`**, onto the `m_addr` bus to complete the transfer. The subsequent cycles show this pattern repeating for the next data words (`73BE9BE7`, `BEE9687D`, etc.).
 
+This debugging session highlights a fundamental principle of bus-master design: **a master must be designed to tolerate the latency of the slaves it communicates with.** The addition of the `S_READ_WAIT` state explicitly handles the one-cycle read latency of our on-chip RAM, ensuring the data path is robust and reliable.
 
 
 ## 4. Final Regression Results
