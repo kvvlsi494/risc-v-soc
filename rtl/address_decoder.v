@@ -84,7 +84,7 @@ module address_decoder (
     // and data width for the RV32I (RISC-V 32-bit Integer) architecture used in this project.
     // This 'addr' bus carries the physical memory address from the active bus master 
     // (CPU or DMA) that is being targeted for a read or write operation.
-    input  [31:0] addr,
+    input [31:0] addr,
 
     // --- Output Port Declarations ---
     // The following are all single-bit output ports. By default in Verilog, these are of 
@@ -94,32 +94,32 @@ module address_decoder (
 
     // This output signal, when driven low ('0'), selects the On-Chip SRAM. It connects
     // directly to the 'cs_n' port of the 'on_chip_ram' module instance in the top-level SoC file.
-    output        ram_cs_n,
+    output ram_cs_n,
 
     // This output selects the slave configuration port of the DMA (Direct Memory Access) engine. 
     // This allows the CPU to write to the DMA's registers to set up a transfer. It connects
     // to the 's_cs_n' port of the 'dma_engine' instance.
-    output        dma_cs_n,
+    output dma_cs_n,
 
     // This output selects the CRC-32 (Cyclic Redundancy Check) hardware accelerator. It allows
     // a master to write data to the CRC unit for processing or read its current result.
     // It connects to the 'cs_n' port of the 'crc32_accelerator' instance.
-    output        crc_cs_n,
+    output crc_cs_n,
 
     // This output selects the Interrupt Controller (INTC). This is used by the CPU to read
     // the interrupt status register or to write to the controller to acknowledge and clear an interrupt.
     // It connects to the 'cs_n' port of the 'interrupt_controller' instance.
-    output        intc_cs_n,
+    output intc_cs_n,
 
     // This output selects the General-Purpose Timer peripheral. This allows the CPU to
     // configure the timer's behavior, such as setting its compare value.
     // It connects to the 'cs_n' port of the 'timer' instance.
-    output        timer_cs_n,
+    output timer_cs_n,
 
     // This output selects the unified UART (Universal Asynchronous Receiver-Transmitter) top module.
     // This allows the CPU to access both the transmitter and receiver sub-modules for serial communication.
     // It connects to the 'cs_n' port of the 'uart_top' instance.
-    output        uart_cs_n // Unified UART CS
+    output uart_cs_n // Unified UART CS
 );
 
     // This section contains the core logic of the decoder. It uses 'assign' statements,
@@ -137,26 +137,26 @@ module address_decoder (
     // If the condition is true (address is in the range 0x0000_0000 to 0x0000_FFFF),
     // the 'ram_cs_n' signal is driven to a logic '0' (active). 
     // If false, it's driven to a logic '1' (inactive). This assigns a 64KB block to the RAM.
-    assign ram_cs_n   = (addr[31:16] == 16'h0000) ? 1'b0 : 1'b1;
+    assign ram_cs_n = (addr[31:16] == 16'h0000) ? 1'b0 : 1'b1;
 
 
     // Line 2: DMA Chip Select Logic
     // This line performs the same comparison for the DMA engine's slave port. If the upper
     // address bits match 0x0001, it activates the DMA chip select. This maps the DMA
     // configuration registers to the address range 0x0001_0000 to 0x0001_FFFF.
-    assign dma_cs_n   = (addr[31:16] == 16'h0001) ? 1'b0 : 1'b1;
+    assign dma_cs_n = (addr[31:16] == 16'h0001) ? 1'b0 : 1'b1;
 
 
     // Line 3: CRC Accelerator Chip Select Logic
     // This maps the CRC peripheral to the address range starting at 0x0002_0000.
     // Only when an address in this range appears on the bus will `crc_cs_n` go low.
-    assign crc_cs_n   = (addr[31:16] == 16'h0002) ? 1'b0 : 1'b1;
+    assign crc_cs_n = (addr[31:16] == 16'h0002) ? 1'b0 : 1'b1;
 
 
     // Line 4: Interrupt Controller Chip Select Logic
     // This maps the Interrupt Controller to the address range starting at 0x0003_0000.
     // This allows the CPU to access the INTC's status and control registers.
-    assign intc_cs_n  = (addr[31:16] == 16'h0003) ? 1'b0 : 1'b1;
+    assign intc_cs_n = (addr[31:16] == 16'h0003) ? 1'b0 : 1'b1;
 
 
     // Line 5: Timer Chip Select Logic
@@ -168,7 +168,7 @@ module address_decoder (
     // Line 6: UART Chip Select Logic
     // This maps the unified UART Top module to the address range starting at 0x0005_0000.
     // Any access within this 64KB block will activate the UART's slave interface.
-    assign uart_cs_n  = (addr[31:16] == 16'h0005) ? 1'b0 : 1'b1; // UART at 0x0005_xxxx
+    assign uart_cs_n = (addr[31:16] == 16'h0005) ? 1'b0 : 1'b1; // UART at 0x0005_xxxx
 
 endmodule
 
