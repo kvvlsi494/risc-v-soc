@@ -139,11 +139,11 @@ If you wish to run a single test case for focused debugging (e.g., to generate a
 
 For a more in-depth look at the project's architecture, verification strategy, and results, please see the documents in the `docs` directory:
 
-- **[Architectural Deep Dive](./docs/architecture.md):** A detailed breakdown of the SoC architecture, including the memory map, bus protocol, and the roles of each IP block.
+- **[Architectural Deep Dive](./architecture.md):** A detailed breakdown of the SoC architecture, including the memory map, bus protocol, and the roles of each IP block.
 
-- **[Verification Strategy & Results](./docs/verification.md):** A comprehensive explanation of the UVM-like testbench, BFM design, self-checking scoreboards, and an analysis of test results, including waveform diagrams.
+- **[Verification Strategy & Results](./verification.md):** A comprehensive explanation of the UVM-like testbench, BFM design, self-checking scoreboards, and an analysis of test results, including waveform diagrams.
 
-- **[References](./docs/references.md):** Links to external resources and specifications used in this project.
+- **[References](./references.md):** Links to external resources and specifications used in this project.
 
 
 
