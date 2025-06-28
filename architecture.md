@@ -51,7 +51,7 @@ graph TD
 
     CPU -- "master bus 0" --> BusMux
     DMA_M -- "master bus 1" --> BusMux
-    BusMux -- "bus_addr, bus_wdata, bus_wr_en" --> AddressDecoder
+    BusMux -- " bus_addr, bus_wdata, bus_wr_en  " --> AddressDecoder
 
     %% Address Decoder to Slaves
     AddressDecoder -- "ram_cs_n" --> RAM
