@@ -85,159 +85,32 @@ module address_decoder (
     // This synthesizes directly to pure combinational logic gates (comparators and multiplexers) 
     // with no clock or memory elements.
 
-    // The logic uses a ternary operator (`condition ? value_if_true : value_if_false`), which is a
-    // compact way to describe a 2-to-1 multiplexer.
-    
     // Line 1: RAM Chip Select Logic
-    // This line checks if the upper 16 bits of the address bus (from bit 31 down to 16)
-    // are equal to the 16-bit hexadecimal value 0x0000. 
-    // If the condition is true (address is in the range 0x0000_0000 to 0x0000_FFFF),
-    // the 'ram_cs_n' signal is driven to a logic '0' (active). 
-    // If false, it's driven to a logic '1' (inactive). This assigns a 64KB block to the RAM.
+    //This assigns a 64KB block to the RAM.
     assign ram_cs_n = (addr[31:16] == 16'h0000) ? 1'b0 : 1'b1;
 
 
     // Line 2: DMA Chip Select Logic
-    // This line performs the same comparison for the DMA engine's slave port. If the upper
-    // address bits match 0x0001, it activates the DMA chip select. This maps the DMA
-    // configuration registers to the address range 0x0001_0000 to 0x0001_FFFF.
     assign dma_cs_n = (addr[31:16] == 16'h0001) ? 1'b0 : 1'b1;
 
 
     // Line 3: CRC Accelerator Chip Select Logic
-    // This maps the CRC peripheral to the address range starting at 0x0002_0000.
-    // Only when an address in this range appears on the bus will `crc_cs_n` go low.
     assign crc_cs_n = (addr[31:16] == 16'h0002) ? 1'b0 : 1'b1;
 
 
     // Line 4: Interrupt Controller Chip Select Logic
-    // This maps the Interrupt Controller to the address range starting at 0x0003_0000.
-    // This allows the CPU to access the INTC's status and control registers.
     assign intc_cs_n = (addr[31:16] == 16'h0003) ? 1'b0 : 1'b1;
 
 
     // Line 5: Timer Chip Select Logic
-    // This maps the Timer peripheral to the address range starting at 0x0004_0000.
     assign timer_cs_n = (addr[31:16] == 16'h0004) ? 1'b0 : 1'b1;
 
 
 
     // Line 6: UART Chip Select Logic
-    // This maps the unified UART Top module to the address range starting at 0x0005_0000.
-    // Any access within this 64KB block will activate the UART's slave interface.
     assign uart_cs_n = (addr[31:16] == 16'h0005) ? 1'b0 : 1'b1; // UART at 0x0005_xxxx
 
 endmodule
-
-
-
-
-
-/*
---------------------------------------------------------------------------------
--- Fundamental Concept Deep Dive: Memory-Mapped I/O (MMIO)
---------------------------------------------------------------------------------
---
--- What is it?
--- Memory-Mapped I/O is a fundamental computer architecture technique where the
--- control registers of I/O (Input/Output) peripherals are "mapped" into the 
--- system's main address space. From the perspective of the CPU (or any bus 
--- master), there is no distinction between accessing a location in RAM and 
--- accessing a register in a peripheral like a UART or a DMA controller. Both
--- are accomplished using the same standard memory access instructions, such as
--- Load Word (LW) and Store Word (SW) in the RISC-V instruction set.
---
--- Where is it used in this file?
--- This entire module IS the hardware implementation of our SoC's MMIO scheme.
--- The logic below carves out specific, non-overlapping regions of the 32-bit 
--- address space and assigns them to different hardware blocks:
---
---   - Address 0x0000_0000 to 0x0000_FFFF -> On-Chip RAM
---   - Address 0x0001_0000 to 0x0001_FFFF -> DMA Engine Registers
---   - Address 0x0002_0000 to 0x0002_FFFF -> CRC Accelerator Registers
---   - ...and so on for every peripheral.
---
--- Why is it used? (Benefits)
--- The primary reason for using MMIO is architectural simplicity and elegance.
--- 1.  Simplified CPU Design: The CPU does not need a special set of I/O 
---     instructions (like the IN/OUT instructions in x86 architecture, which is
---     known as Port-Mapped I/O). The same logic that handles memory loads and 
---     stores can be used to configure and control all peripherals. This aligns
---     perfectly with the RISC (Reduced Instruction Set Computer) philosophy.
---
--- 2.  Unified Address Space: It creates a single, contiguous address space for
---     the entire system, making software development more straightforward. A 
---     pointer in C, for example, can point to a variable in RAM or directly to
---     a UART's data register.
---
--- 3.  Flexibility: It allows peripherals like the DMA engine to access other
---     peripherals directly, just as they would access memory, without needing
---     special pathways.
---
--- This `address_decoder` module is the gatekeeper that enforces this mapping in
--- hardware, making the abstract concept of an address map a physical reality.
---
---------------------------------------------------------------------------------
-*/
-
-
-
-/*
---------------------------------------------------------------------------------
--- Personal Development Process and Coding Ethic
---------------------------------------------------------------------------------
---
--- How I started:
--- The design of this `address_decoder` module did not begin with writing code.
--- It started with architectural planning on paper (or in a text document). Before
--- a single line of Verilog was written, the entire system's memory map was
--- defined. This is a critical first step in any SoC design.
---
--- Example of the planning document outline:
---
---   =================================
---   | SoC Memory Map Definition     |
---   =================================
---   | Start Addr   | End Addr     | Device                 | Size |
---   -----------------------------------------------------------------
---   | 0x0000_0000  | 0x0000_FFFF  | On-Chip SRAM           | 64KB |
---   | 0x0001_0000  | 0x0001_FFFF  | DMA Controller         | 64KB |
---   | 0x0002_0000  | 0x0002_FFFF  | CRC32 Accelerator      | 64KB |
---   | 0x0003_0000  | 0x0003_FFFF  | Interrupt Controller   | 64KB |
---   | 0x0004_0000  | 0x0004_FFFF  | General Purpose Timer  | 64KB |
---   | 0x0005_0000  | 0x0005_FFFF  | UART Top Module        | 64KB |
---   | ...          | ...          | (Reserved for future)  |      |
---   | 0xBAD_DDAA   | (Read value) | Illegal Address Access | N/A  |
---   =================================
---
--- Only after this "contract" was established did I proceed to implement it
--- in hardware. This `address_decoder.v` file is the direct, line-by-line
--- translation of that memory map table into synthesizable hardware logic.
---
--- My Coding Ethic for this Module:
---
--- 1.  Clarity and Readability Over Premature Optimization: The logic uses simple
---     `assign` statements with ternary operators. While a `case` statement could
---     also have been used, this approach is extremely clear and directly shows
---     the one-to-one mapping between an address range and a chip-select signal.
---     For a simple decoder like this, the synthesis tool will produce highly
---     efficient logic from this readable code.
---
--- 2.  Adherence to Naming Conventions: All chip-select signals are named with
---     the `_cs_n` suffix. This is a widely understood convention in the digital
---     design industry that immediately tells any other engineer that the signal
---     is a chip select and that it is active-low. This greatly improves the
---     maintainability and integration of the design.
---
--- 3.  Simplicity and Synthesizability: The module is purely combinational. There
---     are no clocks, resets, or `always @(posedge clk)` blocks. This was a
---     deliberate choice to keep the decoder as simple and fast as possible, as
---     it sits on the critical path for address resolution in the system. The code
---     is written in a style that is guaranteed to be synthesizable by any
---     standard EDA tool.
---
---------------------------------------------------------------------------------
-*/
 
 
 
