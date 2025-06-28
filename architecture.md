@@ -112,7 +112,7 @@ graph TD
 
 ### The Interconnect
 *   **`arbiter`**: A fixed-priority arbiter that resolves bus requests. It receives `m_req_0` (from CPU) and `m_req_1` (from DMA) and asserts a single grant (`m_gnt_0` or `m_gnt_1`), giving priority to the CPU.
-*   **Bus Multiplexers**: A set of MUXs in `risc_soc.sv` that use the arbiter's grant signal as a select line to route the winning master's address, data, and control signals onto the shared system bus.
+*   **`Bus Multiplexers`**: A set of MUXs in `risc_soc.sv` that use the arbiter's grant signal as a select line to route the winning master's address, data, and control signals onto the shared system bus.
 *   **`address_decoder`**: A purely combinational block that translates the upper bits of the system address bus into a single active-low chip select (`_cs_n`) signal for the target slave.
 
 ## 4. System Memory Map
