@@ -64,9 +64,6 @@
 */
 
 
-// The `timescale` compiler directive sets the time units for the simulation.
-// `1ns / 1ps` means that time values are interpreted as nanoseconds (ns),
-// and the simulation precision is in picoseconds (ps).
 `timescale 1ns / 1ps
 
 
