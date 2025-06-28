@@ -70,7 +70,7 @@ import os
 # `subprocess.check_output()`, to execute the compilation and simulation
 # commands as if we were typing them directly into a terminal. This allows our
 # script to control the entire VLSI toolchain, capture the results, and make
-#-- decisions based on the outcome.
+# decisions based on the outcome.
 import subprocess
 
 
@@ -130,7 +130,8 @@ TEST_CASES = [
 # compile command. Centralizing this list prevents compilation failures due
 # to incorrect file ordering and makes it easy to add new RTL files to the project.
 COMPILE_ORDER = [
-     # RTL Files - From simplest peripherals to most complex
+    
+    # RTL Files - From simplest peripherals to most complex
     "rtl/on_chip_ram.v",
     "rtl/crc32_accelerator.v",
     "rtl/timer.v",
@@ -148,6 +149,7 @@ COMPILE_ORDER = [
     
     # Top-level Testbench
     "tb/tb_risc_soc.sv"
+    
 ]
 
 

@@ -53,18 +53,14 @@
 `timescale 1ns / 1ps
 
 
-// This `module` declaration defines the boundary of the dma_engine.
 // It is the most complex peripheral in the SoC, acting as both a slave
 // (to be configured) and a master (to execute transfers).
 module dma_engine (
 
 // --- System Signals ---
-    
-// `clk`: A single-bit input for the system clock. All state changes for
-// both the slave and master logic are synchronized to this clock.
+// All state changes for both the slave and master logic are synchronized to this clock.
 input clk, 
 
-// `rst_n`: A single-bit input for the active-low, asynchronous system reset.
 // When asserted, it brings all internal registers and state machines to a
 // known, idle state.
 input rst_n,
@@ -72,7 +68,7 @@ input rst_n,
 // --- Slave Interface (for configuration by the CPU) ---
 // This set of ports allows the DMA engine to be controlled by another master,
 // typically the CPU. It behaves like a simple memory-mapped peripheral.
-    
+
 // `s_cs_n`: The slave-port chip select (active-low). Asserted by the
 // `address_decoder` when the CPU writes to the DMA's address range.
 input s_cs_n, 
@@ -133,6 +129,7 @@ input [31:0] m_rdata,
 // clock cycle upon completing the entire data transfer. This signal is
 // routed to the `interrupt_controller` to notify the CPU.
 output dma_done
+
 );
 
 
@@ -147,11 +144,11 @@ reg [31:0] len_reg; // Holds the number of 32-bit words to transfer.
 
 // A single-bit register that acts as the "go" signal. It is set to 1 by the
 // CPU to initiate a transfer and is cleared automatically by the hardware.
-reg        start_reg; 
+reg start_reg; 
 
 // A single-bit register that latches the completion status. It is set by the
 // FSM when a transfer finishes and is cleared by the CPU via a slave port write.
-reg        dma_done_reg; 
+reg dma_done_reg; 
 
 // A 32-bit internal buffer. This register is crucial for the DMA's operation.
 // It temporarily stores the data word that has been read from the source
