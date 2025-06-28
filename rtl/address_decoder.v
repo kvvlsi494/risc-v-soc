@@ -68,54 +68,14 @@
 
 
 
-// A 'module' in the Verilog Hardware Description Language (HDL) is the fundamental
-// building block for creating a digital circuit. It's analogous to a class in 
-// object-oriented programming or an IC on a circuit board. It encapsulates a 
-// specific piece of functionality with a clearly defined interface (its ports).
 module address_decoder (
 
-    // --- Input Port Declaration ---
-    // This defines a port named 'addr' as an input to the module. In hardware, this
-    // corresponds to a set of 32 parallel input wires.
-    // The [31:0] specifies that this is a 32-bit bus, which is the standard address
-    // and data width for the RV32I (RISC-V 32-bit Integer) architecture used in this project.
-    // This 'addr' bus carries the physical memory address from the active bus master 
-    // (CPU or DMA) that is being targeted for a read or write operation.
     input [31:0] addr,
-
-    // --- Output Port Declarations ---
-    // The following are all single-bit output ports. By default in Verilog, these are of 
-    // type 'wire'. They will be driven by the combinational logic within this module.
-    // The '_cs_n' suffix is a standard industry naming convention to indicate a "Chip Select,
-    // active-low" signal. Active-low means the device is enabled when the signal is a logic '0'.
-
-    // This output signal, when driven low ('0'), selects the On-Chip SRAM. It connects
-    // directly to the 'cs_n' port of the 'on_chip_ram' module instance in the top-level SoC file.
     output ram_cs_n,
-
-    // This output selects the slave configuration port of the DMA (Direct Memory Access) engine. 
-    // This allows the CPU to write to the DMA's registers to set up a transfer. It connects
-    // to the 's_cs_n' port of the 'dma_engine' instance.
     output dma_cs_n,
-
-    // This output selects the CRC-32 (Cyclic Redundancy Check) hardware accelerator. It allows
-    // a master to write data to the CRC unit for processing or read its current result.
-    // It connects to the 'cs_n' port of the 'crc32_accelerator' instance.
     output crc_cs_n,
-
-    // This output selects the Interrupt Controller (INTC). This is used by the CPU to read
-    // the interrupt status register or to write to the controller to acknowledge and clear an interrupt.
-    // It connects to the 'cs_n' port of the 'interrupt_controller' instance.
     output intc_cs_n,
-
-    // This output selects the General-Purpose Timer peripheral. This allows the CPU to
-    // configure the timer's behavior, such as setting its compare value.
-    // It connects to the 'cs_n' port of the 'timer' instance.
     output timer_cs_n,
-
-    // This output selects the unified UART (Universal Asynchronous Receiver-Transmitter) top module.
-    // This allows the CPU to access both the transmitter and receiver sub-modules for serial communication.
-    // It connects to the 'cs_n' port of the 'uart_top' instance.
     output uart_cs_n // Unified UART CS
 );
 
